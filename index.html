@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chubby Cattle Tip Out</title>
   
-  <!-- Content Security Policy remains the same for security -->
+  <!-- Content Security Policy for basic protection -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
 
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background: #f5f8fa;
+      background: #efefef;
       color: #333;
       margin: 0;
       padding: 0;
@@ -22,13 +22,13 @@
       margin: 40px auto;
       background: #ffffff;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     h1 {
       text-align: center;
-      font-size: 28px;
+      font-size: 26px;
       color: #333;
       font-weight: bold;
       margin-bottom: 20px;
@@ -45,18 +45,18 @@
       width: 100%;
       padding: 12px;
       margin-bottom: 15px;
-      border: 1px solid #bbb;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 16px;
+      font-size: 15px;
       background: #fff;
     }
 
     input[readonly] {
-      background-color: #f1f1f1;
+      background-color: #f5f5f5;
     }
 
     .signature-box {
-      border: 2px dashed #bbb;
+      border: 2px dashed #ccc;
       background-color: #fafafa;
       margin-bottom: 10px;
       display: flex;
@@ -84,7 +84,7 @@
     .clear-btn, .save-btn {
       display: inline-block;
       margin-top: 10px;
-      background-color: #006fbb;
+      background-color: #1a73e8;
       color: white;
       padding: 10px 20px;
       border: none;
@@ -97,7 +97,16 @@
     }
 
     .clear-btn:hover, .save-btn:hover {
-      background-color: #005c99;
+      background-color: #1669c1;
+    }
+
+    small {
+      display: block;
+      margin-top: 5px;
+      color: #666;
+      font-style: italic;
+      font-size: 13px;
+      text-align: center;
     }
 
     @media (max-width: 768px) {
@@ -107,7 +116,7 @@
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 22px;
       }
 
       .clear-btn, .save-btn {
@@ -216,9 +225,6 @@
 </div>
 
 <script>
-  console.log('Performing integrity checks and scanning for vulnerabilities...');
-  console.log('No known vulnerabilities detected in static code.');
-
   function sanitizeInput(value) {
     return value.replace(/[<>]/g, '');
   }
@@ -273,8 +279,7 @@
     document.getElementById('total-tips').value = totalTips.toFixed(2);
 
     const totalNetSales = parseFloat(document.getElementById('total-net-sales').value) || 0;
-    const netSales = totalNetSales;
-    document.getElementById('tip-percentage').value = netSales ? ((totalTips / netSales) * 100).toFixed(2) + '%' : '0%';
+    document.getElementById('tip-percentage').value = totalNetSales ? ((totalTips / totalNetSales) * 100).toFixed(2) + '%' : '0%';
 
     const netFoodSales = parseFloat(document.getElementById('net-food-sales').value) || 0;
     document.getElementById('total-tip-out').value = (netFoodSales * 0.105).toFixed(2);
@@ -290,7 +295,6 @@
 
     const netBeverageSales = totalNetSales - netFoodSales;
     document.getElementById('net-beverage-sales').value = netBeverageSales.toFixed(2);
-
     document.getElementById('bartender-tip-out').value = (netBeverageSales * 0.1).toFixed(2);
 
     const serverActualTipAmount = totalTips
