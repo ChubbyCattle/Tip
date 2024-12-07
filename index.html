@@ -19,7 +19,7 @@
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     h1 {
@@ -76,7 +76,7 @@
       text-align: justify;
     }
 
-    .clear-btn, .save-btn, .email-btn {
+    .clear-btn, .save-btn {
       display: inline-block;
       margin-top: 10px;
       background-color: #5cb85c;
@@ -91,7 +91,7 @@
       transition: background-color 0.3s ease;
     }
 
-    .clear-btn:hover, .save-btn:hover, .email-btn:hover {
+    .clear-btn:hover, .save-btn:hover {
       background-color: #4cae4c;
     }
 
@@ -105,7 +105,7 @@
         font-size: 24px;
       }
 
-      .clear-btn, .save-btn, .email-btn {
+      .clear-btn, .save-btn {
         width: 100%;
         margin-right: 0;
         margin-bottom: 10px;
@@ -202,10 +202,9 @@
   </div>
   <button class="clear-btn" onclick="clearCanvas('manager-signature-canvas')">Clear Signature</button>
 
-  <!-- Buttons: Submit, Save, and Email -->
+  <!-- Buttons: Submit and Share -->
   <button class="save-btn" onclick="submitForm()">Submit Form</button>
-  <button class="save-btn" onclick="saveAsImage()">Save</button>
-  <button class="save-btn" onclick="emailPage()">Email</button>
+  <button class="save-btn" onclick="shareData()">Share</button>
 
   <p class="note">
     Note: This is a document used for payroll and tax purposes, this form must be filled out accurately and completely. All employees receiving tips must verify the tip amount received by initiating this form. As the Server, you are responsible for completing all information contained in this document. This means you must obtain the names of all employees who worked and will receive tips in each department listed. Forging or incorrectly completing this document will NOT be tolerated.
@@ -347,20 +346,8 @@
     context.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  async function saveAsImage() {
-    const container = document.getElementById('form-container');
-    const canvas = await html2canvas(container);
-    const dataURL = canvas.toDataURL('image/png');
-
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = 'ChubbyCattleTipOut.png';
-    document.body.appendChild(link); // Append link to the body to ensure it works on all devices
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  async function emailPage() {
+  async function shareData() {
+    // Capture the entire form as an image including the signature
     const container = document.getElementById('form-container');
     const canvas = await html2canvas(container);
     const dataURL = canvas.toDataURL('image/png');
@@ -370,6 +357,7 @@
     const file = new File([blob], 'ChubbyCattleTipOut.png', { type: blob.type });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      // On mobile or supporting browsers: share directly
       try {
         await navigator.share({
           files: [file],
@@ -377,17 +365,24 @@
           text: 'Please see the attached tip out page.'
         });
       } catch (err) {
-        alert('Sharing canceled or not supported. Please click "Save" first to download the image, then manually attach it to your email.');
-        // Provide a mailto link as a fallback
-        const subject = encodeURIComponent('Chubby Cattle Tip Out');
-        const body = encodeURIComponent('Attached is the Chubby Cattle Tip Out image. Please find the saved image (ChubbyCattleTipOut.png) on your device and attach it to this email.');
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        // If user canceled or share failed, fallback to instructions
+        alert('Sharing canceled or not supported. Please use your device’s email or messaging app and attach the saved image if needed.');
       }
     } else {
-      // If not supported, instruct the user to save first and then attach manually
-      alert('Email sharing not supported. Please use "Save" first, then attach the saved image to your email.');
+      // Fallback for desktop or browsers without sharing:
+      // We'll automatically trigger a download of the image and then open a mailto link.
+      const url = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'ChubbyCattleTipOut.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      alert('Your device does not support direct sharing. The image has been saved. Please attach it manually to your email or messaging app.');
       const subject = encodeURIComponent('Chubby Cattle Tip Out');
-      const body = encodeURIComponent('Please find the saved image (ChubbyCattleTipOut.png) on your device and attach it to this email.');
+      const body = encodeURIComponent('Please find attached the Chubby Cattle Tip Out image (saved as ChubbyCattleTipOut.png). Attach it from your device’s saved files.');
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
     }
   }
