@@ -76,7 +76,7 @@
       text-align: justify;
     }
 
-    .clear-btn {
+    .clear-btn, .share-btn {
       display: inline-block;
       margin-top: 10px;
       background-color: #5cb85c;
@@ -91,26 +91,7 @@
       transition: background-color 0.3s ease;
     }
 
-    .clear-btn:hover {
-      background-color: #4cae4c;
-    }
-
-    .share-btn {
-      display: inline-block;
-      margin-top: 10px;
-      background-color: #5cb85c;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-      font-size: 14px;
-      text-align: center;
-      margin-right: 5px;
-      transition: background-color 0.3s ease;
-    }
-
-    .share-btn:hover {
+    .clear-btn:hover, .share-btn:hover {
       background-color: #4cae4c;
     }
 
@@ -137,7 +118,6 @@
 <div class="container" id="form-container">
   <h1>Chubby Cattle Tip Out</h1>
 
-  <!-- Form Fields -->
   <label>Date (MM/DD/YYYY)</label>
   <input type="text" id="date" placeholder="MM/DD/YYYY">
 
@@ -208,7 +188,6 @@
   <input type="text" id="server-actual-tip-amount" readonly>
   <small>(Total Tips - Net Food & Net Beverage Tip Out)</small>
 
-  <!-- Signature Areas -->
   <label>Server Signature (Tap to sign)</label>
   <div class="signature-box">
     <canvas id="server-signature-canvas"></canvas>
@@ -221,7 +200,6 @@
   </div>
   <button class="clear-btn" onclick="clearCanvas('manager-signature-canvas')">Clear Signature</button>
 
-  <!-- Share Button -->
   <button class="share-btn" onclick="shareData()">Share</button>
 
   <p class="note">
@@ -229,9 +207,7 @@
   </p>
 </div>
 
-<!-- html2canvas for capturing the page as an image -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha256-VFlX9B5KwxiYa1lg9I0W0yqnfycsd30xRBo9KpD6U8Q=" crossorigin="anonymous"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
   function updateCalculations() {
     const ccTips = parseFloat(document.getElementById('total-cc-tips').value) || 0;
@@ -274,8 +250,8 @@
 
     canvas.addEventListener('mousedown', (e) => {
       drawing = true;
-      context.moveTo(e.offsetX, e.offsetY);
       context.beginPath();
+      context.moveTo(e.offsetX, e.offsetY);
     });
 
     canvas.addEventListener('mousemove', (e) => {
@@ -292,8 +268,8 @@
     canvas.addEventListener('touchstart', (e) => {
       drawing = true;
       const rect = canvas.getBoundingClientRect();
-      context.moveTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
       context.beginPath();
+      context.moveTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
     });
 
     canvas.addEventListener('touchmove', (e) => {
@@ -309,11 +285,17 @@
     });
   }
 
+  function clearCanvas(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.beginPath();
+  }
+
   async function shareData() {
     const container = document.getElementById('form-container');
     const canvas = await html2canvas(container);
     const dataURL = canvas.toDataURL('image/png');
-
     const res = await fetch(dataURL);
     const blob = await res.blob();
     const file = new File([blob], 'ChubbyCattleTipOut.png', { type: blob.type });
@@ -326,25 +308,11 @@
           text: 'Please see the attached tip out page.'
         });
       } catch (err) {
-        alert('Sharing canceled or not supported on this device. The image will be downloaded so you can attach it manually.');
-        downloadImage(file);
+        alert('Unable to share. This device may not fully support sharing files from this page.');
       }
     } else {
-      // On desktop or non-supporting devices, just download the image and instruct manually.
-      alert('Sharing not supported on this device. The image will be downloaded so you can attach it to an email or message.');
-      downloadImage(file);
+      alert('Sharing not supported on this device.');
     }
-  }
-
-  function downloadImage(file) {
-    const url = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'ChubbyCattleTipOut.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   }
 
   window.onload = function() {
