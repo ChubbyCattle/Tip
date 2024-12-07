@@ -355,7 +355,9 @@
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = 'ChubbyCattleTipOut.png';
+    document.body.appendChild(link); // Append link to the body to ensure it works on all devices
     link.click();
+    document.body.removeChild(link);
   }
 
   async function emailPage() {
@@ -375,14 +377,17 @@
           text: 'Please see the attached tip out page.'
         });
       } catch (err) {
-        alert('Sharing canceled or not supported. Please save the image first and then attach it manually in your email.');
+        alert('Sharing canceled or not supported. Please click "Save" first to download the image, then manually attach it to your email.');
+        // Provide a mailto link as a fallback
+        const subject = encodeURIComponent('Chubby Cattle Tip Out');
+        const body = encodeURIComponent('Attached is the Chubby Cattle Tip Out image. Please find the saved image (ChubbyCattleTipOut.png) on your device and attach it to this email.');
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
       }
     } else {
-      // Not supported: Provide a mailto link after prompting user to save and attach the file
-      alert('Email sharing is not directly supported on this device/browser. Please click "Save" first to download the image, then attach it manually to your email.');
-      // Open a mailto link with a subject/body
+      // If not supported, instruct the user to save first and then attach manually
+      alert('Email sharing not supported. Please use "Save" first, then attach the saved image to your email.');
       const subject = encodeURIComponent('Chubby Cattle Tip Out');
-      const body = encodeURIComponent('Attached is the Chubby Cattle Tip Out image. Please attach the saved image file you just downloaded.');
+      const body = encodeURIComponent('Please find the saved image (ChubbyCattleTipOut.png) on your device and attach it to this email.');
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
     }
   }
