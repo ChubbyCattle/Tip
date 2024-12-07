@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chubby Cattle Tip Out</title>
   <style>
     body {
@@ -43,6 +43,7 @@
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 16px;
+      background: #fff;
     }
 
     input[readonly] {
@@ -75,7 +76,7 @@
       text-align: justify;
     }
 
-    .clear-btn, .save-btn {
+    .clear-btn, .save-btn, .email-btn {
       display: inline-block;
       margin-top: 10px;
       background-color: #5cb85c;
@@ -86,9 +87,11 @@
       border-radius: 5px;
       font-size: 14px;
       text-align: center;
+      margin-right: 5px;
+      transition: background-color 0.3s ease;
     }
 
-    .clear-btn:hover, .save-btn:hover {
+    .clear-btn:hover, .save-btn:hover, .email-btn:hover {
       background-color: #4cae4c;
     }
 
@@ -102,8 +105,10 @@
         font-size: 24px;
       }
 
-      .clear-btn, .save-btn {
+      .clear-btn, .save-btn, .email-btn {
         width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
       }
     }
   </style>
@@ -114,7 +119,8 @@
   <h1>Chubby Cattle Tip Out</h1>
 
   <!-- Form Fields -->
-  <label>Date (##/##/####)</label>
+  <!-- Changed date format placeholder -->
+  <label>Date (MM/DD/YYYY)</label>
   <input type="text" id="date" placeholder="MM/DD/YYYY">
 
   <label>Server Name</label>
@@ -197,13 +203,18 @@
   </div>
   <button class="clear-btn" onclick="clearCanvas('manager-signature-canvas')">Clear Signature</button>
 
-  <!-- Submit Button -->
+  <!-- Buttons: Submit, Save, and Email -->
   <button class="save-btn" onclick="submitForm()">Submit Form</button>
+  <button class="save-btn" onclick="saveAsImage()">Save</button>
+  <button class="save-btn" onclick="emailPage()">Email</button>
 
   <p class="note">
     Note: This is a document used for payroll and tax purposes, this form must be filled out accurately and completely. All employees receiving tips must verify the tip amount received by initiating this form. As the Server, you are responsible for completing all information contained in this document. This means you must obtain the names of all employees who worked and will receive tips in each department listed. Forging or incorrectly completing this document will NOT be tolerated.
   </p>
 </div>
+
+<!-- html2canvas for capturing the page as an image -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha256-VFlX9B5KwxiYa1lg9I0W0yqnfycsd30xRBo9KpD6U8Q=" crossorigin="anonymous"></script>
 
 <script>
   async function submitForm() {
@@ -238,7 +249,6 @@
         body: JSON.stringify(formData),
       });
 
-      // Add this check to ensure response is okay before parsing JSON
       if (!response.ok) {
         alert('Failed to submit form. Please check your internet connection and try again.');
         return;
@@ -263,8 +273,7 @@
     document.getElementById('total-tips').value = totalTips.toFixed(2);
 
     const totalNetSales = parseFloat(document.getElementById('total-net-sales').value) || 0;
-    const netSales = totalNetSales;
-    document.getElementById('tip-percentage').value = netSales ? ((totalTips / netSales) * 100).toFixed(2) + '%' : '0%';
+    document.getElementById('tip-percentage').value = totalNetSales ? ((totalTips / totalNetSales) * 100).toFixed(2) + '%' : '0%';
 
     const netFoodSales = parseFloat(document.getElementById('net-food-sales').value) || 0;
     document.getElementById('total-tip-out').value = (netFoodSales * 0.105).toFixed(2);
@@ -338,6 +347,43 @@
     const canvas = document.getElementById(canvasId);
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  async function saveAsImage() {
+    const container = document.getElementById('form-container');
+    const canvas = await html2canvas(container);
+    const dataURL = canvas.toDataURL('image/png');
+
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'ChubbyCattleTipOut.png';
+    link.click();
+  }
+
+  async function emailPage() {
+    const container = document.getElementById('form-container');
+    const canvas = await html2canvas(container);
+    const dataURL = canvas.toDataURL('image/png');
+
+    // Convert dataURL to Blob for sharing (if supported)
+    const res = await fetch(dataURL);
+    const blob = await res.blob();
+    const file = new File([blob], 'ChubbyCattleTipOut.png', { type: blob.type });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Chubby Cattle Tip Out',
+          text: 'Please see the attached tip out page.'
+        });
+      } catch (err) {
+        alert('Sharing canceled or not supported. Please save the image first and then attach it manually in your email.');
+      }
+    } else {
+      // If we cannot use navigator.share, instruct the user to save and then email manually.
+      alert('Email sharing is not supported on this device/browser. Please use the "Save" button and attach the saved image in your email client.');
+    }
   }
 
   window.onload = function() {
